@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Log {
+  id           String   @id @default(uuid())
+  method       String
+  statusCode   Int
+  requestBody  String?
+  responseBody String?  @db.Text
+  url          String
+  time         DateTime @default(now())
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  @@map("logs")
+}
+
+enum Role {
+  PROFESSOR
+  SUPERPROFESSOR
+  STUDENT
+}
+
+model User {
+  id       String  @id @default(uuid())
+  name     String
+  email    String? @unique
+  password String?
+  role     Role
+  rm       String? @unique
+
+  team   Team?   @relation(fields: [teamId], references: [id])
+  teamId String?
+
+  logs        Log[]
+  goalsSended TeamGoals[]
+
+  session Session?
+
+  @@index([teamId])
+  @@map("users")
+}
+
+model Team {
+  id   String @id @default(uuid())
+  name String
+
+  session   Session @relation(fields: [sessionId], references: [id])
+  sessionId String
+
+  students   User[]
+  teamGoals  TeamGoals[]
+  teamBoosts TeamBoosts[]
+  teamCards  TeamCards[]
+
+  @@map("teams")
+}
+
+model Session {
+  id        String  @id @default(uuid())
+  name      String
+  isVisible Boolean @default(false)
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String
+
+  teams  Team[]
+  goals  Goal[]
+  cards  Card[]
+  boosts Boost[]
+
+  panel Panel?
+
+  @@unique([createdById])
+  @@map("sessions")
+}
+
+model TeamGoals {
+  id     String @id @default(uuid())
+  points Int
+
+  team   Team   @relation(fields: [teamId], references: [id])
+  teamId String
+
+  goal   Goal   @relation(fields: [goalId], references: [id])
+  goalId String
+
+  sendedBy  User   @relation(fields: [studentId], references: [id])
+  studentId String
+
+  @@map("teamsGoals")
+}
+
+model TeamBoosts {
+  id     String @id @default(uuid())
+  points Int
+
+  team   Team   @relation(fields: [teamId], references: [id])
+  teamId String
+
+  boost   Boost  @relation(fields: [boostId], references: [id])
+  boostId String
+
+  @@map("teamsBoosts")
+}
+
+model TeamCards {
+  id     String @id @default(uuid())
+  points Int
+
+  team   Team   @relation(fields: [teamId], references: [id])
+  teamId String
+
+  card   Card   @relation(fields: [cardId], references: [id])
+  cardId String
+
+  @@map("teamsCards")
+}
+
+model Goal {
+  id          String @id @default(uuid())
+  description String
+  time        Int
+
+  session   Session @relation(fields: [sessionId], references: [id])
+  sessionId String
+
+  teamGoals TeamGoals[]
+
+  @@map("goals")
+}
+
+model Card {
+  id          String @id @default(uuid())
+  description String
+
+  session   Session @relation(fields: [sessionId], references: [id])
+  sessionId String
+
+  teamCards TeamCards[]
+
+  @@map("cards")
+}
+
+model Boost {
+  id          String @id @default(uuid())
+  description String
+
+  session   Session @relation(fields: [sessionId], references: [id])
+  sessionId String
+
+  teamBoosts TeamBoosts[]
+
+  @@map("boosts")
+}
+
+model Panel {
+  id   String @id @default(uuid())
+  time Int
+
+  session   Session @relation(fields: [sessionId], references: [id])
+  sessionId String
+
+  @@unique([sessionId])
+  @@map("panels")
+}
