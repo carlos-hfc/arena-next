@@ -41,8 +41,7 @@ model User {
 
   logs        Log[]
   goalsSended TeamGoals[]
-
-  session Session?
+  sessions    Session[]
 
   @@index([teamId])
   @@map("users")
@@ -64,9 +63,9 @@ model Team {
 }
 
 model Session {
-  id        String  @id @default(uuid())
-  name      String
-  isVisible Boolean @default(false)
+  id         String    @id @default(uuid())
+  name       String
+  launchedAt DateTime?
 
   createdBy   User   @relation(fields: [createdById], references: [id])
   createdById String
@@ -78,7 +77,6 @@ model Session {
 
   panel Panel?
 
-  @@unique([createdById])
   @@map("sessions")
 }
 
