@@ -19,7 +19,7 @@ export async function getSessions(app: FastifyInstance) {
                 z.object({
                   id: z.string().uuid(),
                   name: z.string(),
-                  isVisible: z.boolean(),
+                  launchedAt: z.date().nullable(),
                   createdById: z.string().uuid(),
                 }),
               ),

@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client"
 import { FastifyInstance } from "fastify"
 import { ZodTypeProvider } from "fastify-type-provider-zod"
 import z from "zod"
@@ -23,7 +22,7 @@ export async function getSession(app: FastifyInstance) {
               session: z.object({
                 id: z.string().uuid(),
                 name: z.string(),
-                isVisible: z.boolean(),
+                launchedAt: z.date().nullable(),
                 createdById: z.string().uuid(),
                 teams: z.array(
                   z.object({
@@ -40,26 +39,13 @@ export async function getSession(app: FastifyInstance) {
       async request => {
         const { sessionId } = request.params
 
-        let where: Prisma.SessionFindUniqueArgs["where"] = {
-          id: sessionId,
-        }
-
-        const userId = await request.getCurrentUserId({ optional: true })
-
-        if (userId) {
-          where = {
-            ...where,
-            createdById: userId,
-          }
-        } else {
-          where = {
-            ...where,
-            isVisible: true,
-          }
-        }
+        const userId = await request.getCurrentUserId()
 
         const session = await prisma.session.findUnique({
-          where,
+          where: {
+            id: sessionId,
+            createdById: userId,
+          },
           include: {
             teams: true,
           },

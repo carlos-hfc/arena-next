@@ -17,6 +17,7 @@ import { createSession } from "./http/routes/session/create-session"
 import { getSession } from "./http/routes/session/get-session"
 import { getSessions } from "./http/routes/session/get-sessions"
 import { launchSession } from "./http/routes/session/launch-session"
+import { updateSession } from "./http/routes/session/update-session"
 import { createTeam } from "./http/routes/team/create-team"
 import { getTeam } from "./http/routes/team/get-team"
 import { registerStudent } from "./http/routes/team/register-student"
@@ -40,6 +41,7 @@ app.register(authenticate)
 app.register(getSessions)
 app.register(getSession)
 app.register(createSession)
+app.register(updateSession)
 app.register(launchSession)
 
 app.register(createGoal)

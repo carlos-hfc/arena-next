@@ -6,16 +6,19 @@ import { ClientError } from "@/errors/client-error"
 import { auth } from "@/http/middlewares/auth"
 import { prisma } from "@/lib/prisma"
 
-export async function launchSession(app: FastifyInstance) {
+export async function updateSession(app: FastifyInstance) {
   app
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
     .patch(
-      "/sessions/:sessionId/lauch",
+      "/sessions/:sessionId",
       {
         schema: {
           params: z.object({
             sessionId: z.string().uuid(),
+          }),
+          body: z.object({
+            name: z.string().min(4),
           }),
           response: {
             204: z.null(),
@@ -24,16 +27,14 @@ export async function launchSession(app: FastifyInstance) {
       },
       async (request, reply) => {
         const { sessionId } = request.params
+        const { name } = request.body
+
         const userId = await request.getCurrentUserId()
 
         const session = await prisma.session.findUnique({
           where: {
             id: sessionId,
             createdById: userId,
-            launchedAt: null,
-          },
-          include: {
-            goals: true,
           },
         })
 
@@ -41,8 +42,10 @@ export async function launchSession(app: FastifyInstance) {
           throw new ClientError("Session not found")
         }
 
-        if (session.goals.length <= 0) {
-          throw new ClientError("Session need to have goals")
+        if (session.launchedAt) {
+          throw new ClientError(
+            "You're not allowed to update a launched session",
+          )
         }
 
         await prisma.session.update({
@@ -50,7 +53,8 @@ export async function launchSession(app: FastifyInstance) {
             id: sessionId,
           },
           data: {
-            launchedAt: new Date(),
+            name,
+            createdById: userId,
           },
         })
 
