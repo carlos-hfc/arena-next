@@ -11,40 +11,27 @@ model Log {
   id           String   @id @default(uuid())
   method       String
   statusCode   Int
-  requestBody  String?
-  responseBody String?  @db.Text
   url          String
-  time         DateTime @default(now())
+  requestBody  String?  @db.Text
+  responseBody String?  @db.Text
+  createdAt    DateTime @default(now())
 
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
+  student   Student? @relation(fields: [studentId], references: [id])
+  studentId String?
 
   @@map("logs")
 }
 
-enum Role {
-  PROFESSOR
-  SUPERPROFESSOR
-  STUDENT
-}
+model Student {
+  id   String  @id @default(uuid())
+  name String?
+  rm   String? @unique
 
-model User {
-  id       String  @id @default(uuid())
-  name     String
-  email    String? @unique
-  password String?
-  role     Role
-  rm       String? @unique
+  logs         Log[]
+  goalsSended  TeamGoals[]
+  studentTeams StudentTeam[]
 
-  team   Team?   @relation(fields: [teamId], references: [id])
-  teamId String?
-
-  logs        Log[]
-  goalsSended TeamGoals[]
-  sessions    Session[]
-
-  @@index([teamId])
-  @@map("users")
+  @@map("students")
 }
 
 model Team {
@@ -54,21 +41,30 @@ model Team {
   session   Session @relation(fields: [sessionId], references: [id])
   sessionId String
 
-  students   User[]
-  teamGoals  TeamGoals[]
-  teamBoosts TeamBoosts[]
-  teamCards  TeamCards[]
+  studentTeams StudentTeam[]
+  teamGoals    TeamGoals[]
+  teamBoosts   TeamBoosts[]
+  teamCards    TeamCards[]
 
   @@map("teams")
+}
+
+model StudentTeam {
+  id String @id @default(uuid())
+
+  team   Team   @relation(fields: [teamId], references: [id])
+  teamId String
+
+  student   Student @relation(fields: [studentId], references: [id])
+  studentId String
+
+  @@map("studentTeams")
 }
 
 model Session {
   id         String    @id @default(uuid())
   name       String
-  launchedAt DateTime?
-
-  createdBy   User   @relation(fields: [createdById], references: [id])
-  createdById String
+  releasedAt DateTime?
 
   teams  Team[]
   goals  Goal[]
@@ -81,8 +77,10 @@ model Session {
 }
 
 model TeamGoals {
-  id     String @id @default(uuid())
-  points Int
+  id        String   @id @default(uuid())
+  title     String
+  path      String
+  createdAt DateTime @default(now())
 
   team   Team   @relation(fields: [teamId], references: [id])
   teamId String
@@ -90,15 +88,15 @@ model TeamGoals {
   goal   Goal   @relation(fields: [goalId], references: [id])
   goalId String
 
-  sendedBy  User   @relation(fields: [studentId], references: [id])
-  studentId String
+  sendedBy   Student @relation(fields: [sendedById], references: [id])
+  sendedById String
 
   @@map("teamsGoals")
 }
 
 model TeamBoosts {
-  id     String @id @default(uuid())
-  points Int
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
 
   team   Team   @relation(fields: [teamId], references: [id])
   teamId String
@@ -110,8 +108,8 @@ model TeamBoosts {
 }
 
 model TeamCards {
-  id     String @id @default(uuid())
-  points Int
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
 
   team   Team   @relation(fields: [teamId], references: [id])
   teamId String
@@ -160,8 +158,8 @@ model Boost {
 }
 
 model Panel {
-  id   String @id @default(uuid())
-  time Int
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
 
   session   Session @relation(fields: [sessionId], references: [id])
   sessionId String
