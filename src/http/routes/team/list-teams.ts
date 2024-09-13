@@ -4,28 +4,37 @@ import z from "zod"
 
 import { prisma } from "@/lib/prisma"
 
-export async function getSessions(app: FastifyInstance) {
+export async function listTeams(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
-    "/sessions",
+    "/sessions/:sessionId/teams",
     {
       schema: {
+        params: z.object({
+          sessionId: z.string().uuid(),
+        }),
         response: {
           200: z.object({
-            sessions: z.array(
+            teams: z.array(
               z.object({
                 id: z.string().uuid(),
+                sessionId: z.string().uuid(),
                 name: z.string(),
-                releasedAt: z.date().nullable(),
               }),
             ),
           }),
         },
       },
     },
-    async () => {
-      const sessions = await prisma.session.findMany()
+    async request => {
+      const { sessionId } = request.params
 
-      return { sessions }
+      const teams = await prisma.team.findMany({
+        where: {
+          sessionId,
+        },
+      })
+
+      return { teams }
     },
   )
 }

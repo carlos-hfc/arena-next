@@ -3,59 +3,76 @@ import { ZodTypeProvider } from "fastify-type-provider-zod"
 import z from "zod"
 
 import { ClientError } from "@/errors/client-error"
-import { auth } from "@/http/middlewares/auth"
 import { prisma } from "@/lib/prisma"
 
 export async function getSession(app: FastifyInstance) {
-  app
-    .withTypeProvider<ZodTypeProvider>()
-    .register(auth)
-    .get(
-      "/sessions/:sessionId",
-      {
-        schema: {
-          params: z.object({
-            sessionId: z.string().uuid(),
-          }),
-          response: {
-            200: z.object({
-              session: z.object({
-                id: z.string().uuid(),
-                name: z.string(),
-                launchedAt: z.date().nullable(),
-                createdById: z.string().uuid(),
-                teams: z.array(
-                  z.object({
-                    id: z.string().uuid(),
-                    name: z.string(),
-                    sessionId: z.string().uuid(),
-                  }),
-                ),
-              }),
+  app.withTypeProvider<ZodTypeProvider>().get(
+    "/sessions/:sessionId",
+    {
+      schema: {
+        params: z.object({
+          sessionId: z.string().uuid(),
+        }),
+        response: {
+          200: z.object({
+            session: z.object({
+              id: z.string().uuid(),
+              name: z.string(),
+              releasedAt: z.date().nullable(),
+              teams: z.array(
+                z.object({
+                  id: z.string().uuid(),
+                  sessionId: z.string().uuid(),
+                  name: z.string(),
+                }),
+              ),
+              goals: z.array(
+                z.object({
+                  id: z.string().uuid(),
+                  sessionId: z.string().uuid(),
+                  description: z.string(),
+                  time: z.number().int(),
+                }),
+              ),
+              cards: z.array(
+                z.object({
+                  id: z.string().uuid(),
+                  sessionId: z.string().uuid(),
+                  description: z.string(),
+                }),
+              ),
+              boosts: z.array(
+                z.object({
+                  id: z.string().uuid(),
+                  sessionId: z.string().uuid(),
+                  description: z.string(),
+                }),
+              ),
             }),
-          },
+          }),
         },
       },
-      async request => {
-        const { sessionId } = request.params
+    },
+    async request => {
+      const { sessionId } = request.params
 
-        const userId = await request.getCurrentUserId()
+      const session = await prisma.session.findUnique({
+        where: {
+          id: sessionId,
+        },
+        include: {
+          teams: true,
+          goals: true,
+          boosts: true,
+          cards: true,
+        },
+      })
 
-        const session = await prisma.session.findUnique({
-          where: {
-            id: sessionId,
-            createdById: userId,
-          },
-          include: {
-            teams: true,
-          },
-        })
+      if (!session) {
+        throw new ClientError("Session not found")
+      }
 
-        if (!session) {
-          throw new ClientError("Session not found")
-        }
-
-        return { session }
-      },
-    )
+      return { session }
+    },
+  )
 }

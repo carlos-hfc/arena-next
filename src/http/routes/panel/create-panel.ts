@@ -5,27 +5,22 @@ import z from "zod"
 import { ClientError } from "@/errors/client-error"
 import { prisma } from "@/lib/prisma"
 
-export async function createGoal(app: FastifyInstance) {
+export async function createPanel(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
-    "/sessions/:sessionId/goals",
+    "/sessions/:sessionId/panels",
     {
       schema: {
         params: z.object({
           sessionId: z.string().uuid(),
         }),
-        body: z.object({
-          description: z.string().min(6),
-          time: z.number().int(),
-        }),
         response: {
           201: z.object({
-            goalId: z.string().uuid(),
+            panelId: z.string().uuid(),
           }),
         },
       },
     },
     async (request, reply) => {
-      const { description, time } = request.body
       const { sessionId } = request.params
 
       const session = await prisma.session.findUnique({
@@ -33,7 +28,7 @@ export async function createGoal(app: FastifyInstance) {
           id: sessionId,
         },
         include: {
-          goals: true,
+          panel: true,
         },
       })
 
@@ -41,19 +36,21 @@ export async function createGoal(app: FastifyInstance) {
         throw new ClientError("Session not found")
       }
 
-      if (session.goals.length >= 3) {
-        throw new ClientError("This session already has 3 goals")
+      if (session.releasedAt === null) {
+        throw new ClientError("Unreleased sessions cannot be on panels")
       }
 
-      const goal = await prisma.goal.create({
+      if (session.panel !== null) {
+        throw new ClientError("This session already has a panel")
+      }
+
+      const panel = await prisma.panel.create({
         data: {
-          description,
-          time,
           sessionId,
         },
       })
 
-      return reply.status(201).send({ goalId: goal.id })
+      return reply.status(201).send({ panelId: panel.id })
     },
   )
 }

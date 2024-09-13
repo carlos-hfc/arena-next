@@ -15,7 +15,10 @@ export const errroHandler: FastifyErrorHandler = (error, _, reply) => {
   if (error instanceof ZodError) {
     return reply.status(400).send({
       message: "Invalid input",
-      errors: error.flatten().fieldErrors,
+      errors:
+        error.flatten().formErrors.length > 0
+          ? error.flatten().formErrors
+          : error.flatten().fieldErrors,
     })
   }
 

@@ -5,27 +5,20 @@ import z from "zod"
 import { ClientError } from "@/errors/client-error"
 import { prisma } from "@/lib/prisma"
 
-export async function createGoal(app: FastifyInstance) {
-  app.withTypeProvider<ZodTypeProvider>().post(
-    "/sessions/:sessionId/goals",
+export async function releaseSession(app: FastifyInstance) {
+  app.withTypeProvider<ZodTypeProvider>().patch(
+    "/sessions/:sessionId/release",
     {
       schema: {
         params: z.object({
           sessionId: z.string().uuid(),
         }),
-        body: z.object({
-          description: z.string().min(6),
-          time: z.number().int(),
-        }),
         response: {
-          201: z.object({
-            goalId: z.string().uuid(),
-          }),
+          204: z.null(),
         },
       },
     },
     async (request, reply) => {
-      const { description, time } = request.body
       const { sessionId } = request.params
 
       const session = await prisma.session.findUnique({
@@ -33,7 +26,11 @@ export async function createGoal(app: FastifyInstance) {
           id: sessionId,
         },
         include: {
-          goals: true,
+          _count: {
+            select: {
+              goals: true,
+            },
+          },
         },
       })
 
@@ -41,19 +38,24 @@ export async function createGoal(app: FastifyInstance) {
         throw new ClientError("Session not found")
       }
 
-      if (session.goals.length >= 3) {
-        throw new ClientError("This session already has 3 goals")
+      if (session.releasedAt !== null) {
+        throw new ClientError("This session has already been released")
       }
 
-      const goal = await prisma.goal.create({
+      if (session._count.goals < 3) {
+        throw new ClientError("Session need to have at least three goals")
+      }
+
+      await prisma.session.update({
+        where: {
+          id: sessionId,
+        },
         data: {
-          description,
-          time,
-          sessionId,
+          releasedAt: new Date(),
         },
       })
 
-      return reply.status(201).send({ goalId: goal.id })
+      reply.status(204)
     },
   )
 }

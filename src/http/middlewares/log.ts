@@ -19,10 +19,8 @@ export const log = fastifyPlugin(async app => {
           method: request.raw.method ?? request.method,
           url: request.raw.url ?? request.url,
           statusCode: reply.raw.statusCode ?? reply.statusCode,
-          time: new Date(),
           responseBody: JSON.stringify(reply.payload ?? payload) || null,
           requestBody: JSON.stringify(request.body) || null,
-          userId: (request.user as { sub?: string })?.sub || null,
         },
       })
     })
