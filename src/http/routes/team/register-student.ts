@@ -21,8 +21,8 @@ export async function registerStudent(app: FastifyInstance) {
             .transform(value => value.toString()),
         }),
         response: {
-          201: z.object({
-            studentId: z.string().uuid(),
+          200: z.object({
+            token: z.string(),
           }),
         },
       },
@@ -53,7 +53,12 @@ export async function registerStudent(app: FastifyInstance) {
         },
       })
 
-      return reply.status(201).send({ studentId: student.id })
+      const token = await reply.jwtSign(
+        { sub: student.id },
+        { sign: { expiresIn: "7d" } },
+      )
+
+      return reply.send({ token })
     },
   )
 }
