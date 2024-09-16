@@ -10,10 +10,10 @@ async function main() {
   await prisma.boost.deleteMany()
   await prisma.card.deleteMany()
   await prisma.goal.deleteMany()
-  await prisma.team.deleteMany()
-  await prisma.session.deleteMany()
   await prisma.studentTeam.deleteMany()
+  await prisma.team.deleteMany()
   await prisma.student.deleteMany()
+  await prisma.session.deleteMany()
   await prisma.log.deleteMany()
 }
 
