@@ -125,14 +125,129 @@ export async function getPanel(app: FastifyInstance) {
     //   return panelScore
     // },
     async (connection, request) => {
-      connection.on("message", async msg => {
-        const strMessage = JSON.stringify(msg)
+      connection.on("message", async (msg, isBinary) => {
+        const strMessage = isBinary ? JSON.stringify(msg) : msg.toString()
 
         const params = new URL(request.url, "http://localhost:3333")
           .searchParams
 
         const sessionId = params.get("sessionId")?.toString()
         const panelId = params.get("panelId")?.toString()
+
+        const sessionExist = await prisma.session.findUnique({
+          where: {
+            id: sessionId,
+            panel: {
+              id: panelId,
+            },
+          },
+        })
+
+        if (!sessionExist) {
+          connection.send(strMessage)
+        }
+
+        const body: ParsedData = strMessage ? JSON.parse(strMessage) : {}
+
+        if (body.goalId) {
+          const teamGoals = await prisma.teamGoals.findFirst({
+            where: {
+              goalId: body.goalId,
+              teamId: body.teamId,
+              scored: false,
+            },
+          })
+
+          if (teamGoals) {
+            await prisma.teamGoals.update({
+              where: {
+                id: teamGoals.id,
+              },
+              data: {
+                scored: true,
+              },
+            })
+          }
+        }
+
+        if (body.boostId) {
+          const teamBoosts = await prisma.teamBoosts.findFirst({
+            where: {
+              boostId: body.boostId,
+              teamId: body.teamId,
+              scored: false,
+            },
+          })
+
+          if (teamBoosts) {
+            await prisma.teamBoosts.update({
+              where: {
+                id: teamBoosts.id,
+              },
+              data: {
+                scored: true,
+              },
+            })
+          }
+        }
+
+        if (body.cardId) {
+          const teamCards = await prisma.teamCards.findFirst({
+            where: {
+              cardId: body.cardId,
+              teamId: body.teamId,
+              scored: false,
+            },
+          })
+
+          if (teamCards) {
+            await prisma.teamCards.update({
+              where: {
+                id: teamCards.id,
+              },
+              data: {
+                scored: true,
+              },
+            })
+          }
+        }
+
+        const [goalScoreCount, cardScoreCount, boostScoreCount] =
+          await Promise.all([
+            prisma.teamGoals.findMany({
+              where: {
+                scored: true,
+                team: {
+                  sessionId,
+                },
+              },
+              include: {
+                team: true,
+              },
+            }),
+            prisma.teamCards.findMany({
+              where: {
+                scored: true,
+                team: {
+                  sessionId,
+                },
+              },
+              include: {
+                team: true,
+              },
+            }),
+            prisma.teamBoosts.findMany({
+              where: {
+                scored: true,
+                team: {
+                  sessionId,
+                },
+              },
+              include: {
+                team: true,
+              },
+            }),
+          ])
 
         const session = await prisma.session.findUnique({
           where: {
@@ -157,61 +272,6 @@ export async function getPanel(app: FastifyInstance) {
         if (!session) {
           connection.send(strMessage)
         }
-
-        const body = JSON.parse(strMessage) as ParsedData
-
-        if (body.goalId) {
-          const teamGoals = await prisma.teamGoals.findFirst({
-            where: {
-              goalId: body.goalId,
-              teamId: body.teamId,
-            },
-          })
-
-          if (!teamGoals) {
-            await prisma.teamGoals.create({
-              data: {
-                goalId: body.goalId,
-                teamId: body.teamId,
-                sendedById: body.sendedById,
-              },
-            })
-          }
-        }
-
-        const [goalScoreCount, cardScoreCount, boostScoreCount] =
-          await Promise.all([
-            prisma.teamGoals.findMany({
-              where: {
-                team: {
-                  sessionId,
-                },
-              },
-              include: {
-                team: true,
-              },
-            }),
-            prisma.teamCards.findMany({
-              where: {
-                team: {
-                  sessionId,
-                },
-              },
-              include: {
-                team: true,
-              },
-            }),
-            prisma.teamBoosts.findMany({
-              where: {
-                team: {
-                  sessionId,
-                },
-              },
-              include: {
-                team: true,
-              },
-            }),
-          ])
 
         const panelScore = session?.teams.map(team => {
           const goalScore = goalScoreCount.filter(
