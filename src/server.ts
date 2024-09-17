@@ -10,11 +10,11 @@ import {
 
 import { env } from "./env"
 import { errroHandler } from "./error-handler"
+import { log } from "./http/middlewares/log"
 import { createBoost } from "./http/routes/boost/create-boost"
 import { createCard } from "./http/routes/card/create-card"
 import { createGoal } from "./http/routes/goals/create-goal"
 import { sendGoal } from "./http/routes/goals/send-goal"
-import { createPanel } from "./http/routes/panel/create-panel"
 import { getPanel } from "./http/routes/panel/get-panel"
 import { createSession } from "./http/routes/session/create-session"
 import { getSession } from "./http/routes/session/get-session"
@@ -27,7 +27,7 @@ import { registerStudent } from "./http/routes/team/register-student"
 
 const app = fastify()
 
-// app.register(log)
+app.register(log)
 
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
@@ -59,6 +59,6 @@ app.register(getTeam)
 app.register(registerStudent)
 
 app.register(getPanel)
-app.register(createPanel)
+// app.register(createPanel)
 
 app.listen({ port: env.PORT }).then(() => console.log("HTTP Server running"))

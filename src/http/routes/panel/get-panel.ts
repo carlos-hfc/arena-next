@@ -134,16 +134,27 @@ export async function getPanel(app: FastifyInstance) {
         const sessionId = params.get("sessionId")?.toString()
         const panelId = params.get("panelId")?.toString()
 
-        const sessionExist = await prisma.session.findUnique({
+        const session = await prisma.session.findUnique({
           where: {
             id: sessionId,
             panel: {
               id: panelId,
             },
           },
+          include: {
+            teams: {
+              select: {
+                id: true,
+                name: true,
+                teamGoals: true,
+                teamCards: true,
+                teamBoosts: true,
+              },
+            },
+          },
         })
 
-        if (!sessionExist) {
+        if (!session) {
           connection.send(strMessage)
         }
 
@@ -248,30 +259,6 @@ export async function getPanel(app: FastifyInstance) {
               },
             }),
           ])
-
-        const session = await prisma.session.findUnique({
-          where: {
-            id: sessionId,
-            panel: {
-              id: panelId,
-            },
-          },
-          include: {
-            teams: {
-              select: {
-                id: true,
-                name: true,
-                teamGoals: true,
-                teamCards: true,
-                teamBoosts: true,
-              },
-            },
-          },
-        })
-
-        if (!session) {
-          connection.send(strMessage)
-        }
 
         const panelScore = session?.teams.map(team => {
           const goalScore = goalScoreCount.filter(

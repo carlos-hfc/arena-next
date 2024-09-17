@@ -14,7 +14,9 @@ export async function releaseSession(app: FastifyInstance) {
           sessionId: z.string().uuid(),
         }),
         response: {
-          204: z.null(),
+          201: z.object({
+            panelId: z.string().uuid(),
+          }),
         },
       },
     },
@@ -46,16 +48,26 @@ export async function releaseSession(app: FastifyInstance) {
         throw new ClientError("Session need to have at least three goals")
       }
 
-      await prisma.session.update({
-        where: {
-          id: sessionId,
-        },
-        data: {
-          releasedAt: new Date(),
-        },
+      const panel = await prisma.$transaction(async tr => {
+        await tr.session.update({
+          where: {
+            id: sessionId,
+          },
+          data: {
+            releasedAt: new Date(),
+          },
+        })
+
+        const panel = await tr.panel.create({
+          data: {
+            sessionId,
+          },
+        })
+
+        return panel
       })
 
-      reply.status(204)
+      return reply.status(201).send({ panelId: panel.id })
     },
   )
 }
