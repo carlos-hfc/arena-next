@@ -126,6 +126,7 @@ model Goal {
   id          String @id @default(uuid())
   description String
   time        Int
+  order       Int
 
   session   Session @relation(fields: [sessionId], references: [id])
   sessionId String
@@ -136,8 +137,9 @@ model Goal {
 }
 
 model Card {
-  id          String @id @default(uuid())
+  id          String   @id @default(uuid())
   description String
+  createdAt   DateTime @default(now())
 
   session   Session @relation(fields: [sessionId], references: [id])
   sessionId String
@@ -148,8 +150,9 @@ model Card {
 }
 
 model Boost {
-  id          String @id @default(uuid())
+  id          String   @id @default(uuid())
   description String
+  createdAt   DateTime @default(now())
 
   session   Session @relation(fields: [sessionId], references: [id])
   sessionId String
@@ -160,8 +163,9 @@ model Boost {
 }
 
 model Panel {
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  endedAt   DateTime?
 
   session   Session @relation(fields: [sessionId], references: [id])
   sessionId String
