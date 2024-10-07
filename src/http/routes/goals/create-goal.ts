@@ -16,6 +16,7 @@ export async function createGoal(app: FastifyInstance) {
         body: z.object({
           description: z.string().min(6),
           time: z.number().int(),
+          order: z.number().int(),
         }),
         response: {
           201: z.object({
@@ -25,7 +26,7 @@ export async function createGoal(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const { description, time } = request.body
+      const { description, time, order } = request.body
       const { sessionId } = request.params
 
       const session = await prisma.session.findUnique({
@@ -50,6 +51,7 @@ export async function createGoal(app: FastifyInstance) {
           description,
           time,
           sessionId,
+          order,
         },
       })
 
