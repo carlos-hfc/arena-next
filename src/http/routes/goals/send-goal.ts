@@ -1,8 +1,3 @@
-import { randomUUID } from "node:crypto"
-import { extname } from "node:path"
-import { pipeline } from "node:stream"
-import { promisify } from "node:util"
-
 import { FastifyInstance } from "fastify"
 import { ZodTypeProvider } from "fastify-type-provider-zod"
 import z from "zod"
@@ -10,8 +5,7 @@ import z from "zod"
 import { ClientError } from "@/errors/client-error"
 import { auth } from "@/http/middlewares/auth"
 import { prisma } from "@/lib/prisma"
-
-const pump = promisify(pipeline)
+import { r2Storage } from "@/lib/r2-storage"
 
 export async function sendGoal(app: FastifyInstance) {
   app
@@ -38,15 +32,9 @@ export async function sendGoal(app: FastifyInstance) {
           throw new ClientError("File is required")
         }
 
-        const fileId = randomUUID()
-        const extension = extname(upload.filename)
-        const filename = fileId.concat(extension)
-
-        // const writeStream = createWriteStream(
-        //   resolve(__dirname, "..", "..", "..", "..", "uploads", filename),
-        // )
-
-        // await pump(upload.file, writeStream)
+        const { url } = await r2Storage({
+          file: upload,
+        })
 
         const goal = await prisma.goal.findUnique({
           where: {
@@ -83,7 +71,7 @@ export async function sendGoal(app: FastifyInstance) {
           data: {
             goalId,
             sendedById: studentId,
-            path: filename,
+            path: url,
             teamId,
           },
         })

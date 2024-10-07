@@ -1,6 +1,9 @@
+import { resolve } from "node:path"
+
 import fastifyCors from "@fastify/cors"
 import fastifyJwt from "@fastify/jwt"
 import fastifyMultipart from "@fastify/multipart"
+import fastifyStatic from "@fastify/static"
 import fastifyWebsocket from "@fastify/websocket"
 import fastify from "fastify"
 import {
@@ -40,6 +43,10 @@ app.register(fastifyJwt, {
 })
 app.register(fastifyWebsocket)
 app.register(fastifyMultipart)
+app.register(fastifyStatic, {
+  root: resolve(__dirname, "..", "uploads"),
+  prefix: "/uploads",
+})
 
 app.register(getSessions)
 app.register(getSession)
