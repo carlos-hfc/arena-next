@@ -48,8 +48,8 @@ export async function releaseSession(app: FastifyInstance) {
         throw new ClientError("Session need to have at least three goals")
       }
 
-      const panel = await prisma.$transaction(async tr => {
-        await tr.session.update({
+      const panel = await prisma.$transaction(async transaction => {
+        await transaction.session.update({
           where: {
             id: sessionId,
           },
@@ -58,7 +58,7 @@ export async function releaseSession(app: FastifyInstance) {
           },
         })
 
-        const panel = await tr.panel.create({
+        const panel = await transaction.panel.create({
           data: {
             sessionId,
           },

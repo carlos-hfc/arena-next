@@ -32,6 +32,7 @@ export async function getSession(app: FastifyInstance) {
                   sessionId: z.string().uuid(),
                   description: z.string(),
                   time: z.number().int(),
+                  order: z.number().int(),
                 }),
               ),
               cards: z.array(
@@ -39,6 +40,7 @@ export async function getSession(app: FastifyInstance) {
                   id: z.string().uuid(),
                   sessionId: z.string().uuid(),
                   description: z.string(),
+                  createdAt: z.coerce.date(),
                 }),
               ),
               boosts: z.array(
@@ -46,6 +48,7 @@ export async function getSession(app: FastifyInstance) {
                   id: z.string().uuid(),
                   sessionId: z.string().uuid(),
                   description: z.string(),
+                  createdAt: z.coerce.date(),
                 }),
               ),
             }),
@@ -61,10 +64,26 @@ export async function getSession(app: FastifyInstance) {
           id: sessionId,
         },
         include: {
-          teams: true,
-          goals: true,
-          boosts: true,
-          cards: true,
+          teams: {
+            orderBy: {
+              name: "asc",
+            },
+          },
+          goals: {
+            orderBy: {
+              order: "asc",
+            },
+          },
+          boosts: {
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
+          cards: {
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
         },
       })
 
