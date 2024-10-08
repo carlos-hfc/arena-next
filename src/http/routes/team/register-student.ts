@@ -1,3 +1,4 @@
+import { Student } from "@prisma/client"
 import { FastifyInstance } from "fastify"
 import { ZodTypeProvider } from "fastify-type-provider-zod"
 import z from "zod"
@@ -41,17 +42,27 @@ export async function registerStudent(app: FastifyInstance) {
         throw new ClientError("Team not found")
       }
 
-      const student = await prisma.student.create({
-        data: {
-          name,
+      let student: Student | null
+
+      student = await prisma.student.findUnique({
+        where: {
           rm,
-          studentTeams: {
-            create: {
-              teamId,
-            },
-          },
         },
       })
+
+      if (!student) {
+        student = await prisma.student.create({
+          data: {
+            name,
+            rm,
+            studentTeams: {
+              create: {
+                teamId,
+              },
+            },
+          },
+        })
+      }
 
       const token = await reply.jwtSign(
         { sub: student.id },
