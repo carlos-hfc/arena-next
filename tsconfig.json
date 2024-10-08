@@ -10,14 +10,7 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "moduleResolution": "node16",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    },
-    "outDir": "./dist"
+    "moduleResolution": "node16"
   },
   "include": [
     "src/**/*",

@@ -2,10 +2,10 @@ import { FastifyInstance } from "fastify"
 import { ZodTypeProvider } from "fastify-type-provider-zod"
 import z from "zod"
 
-import { ClientError } from "@/errors/client-error"
-import { auth } from "@/http/middlewares/auth"
-import { prisma } from "@/lib/prisma"
-import { r2Storage } from "@/lib/r2-storage"
+import { ClientError } from "../../../errors/client-error"
+import { auth } from "../../../http/middlewares/auth"
+import { prisma } from "../../../lib/prisma"
+import { r2Storage } from "../../../lib/r2-storage"
 
 export async function sendGoal(app: FastifyInstance) {
   app

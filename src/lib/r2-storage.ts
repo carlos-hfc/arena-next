@@ -7,7 +7,7 @@ import { promisify } from "node:util"
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { MultipartFile } from "@fastify/multipart"
 
-import { env } from "@/env"
+import { env } from "../env"
 
 const pump = promisify(pipeline)
 

@@ -1,6 +1,6 @@
 import fastifyPlugin from "fastify-plugin"
 
-import { ClientError } from "@/errors/client-error"
+import { ClientError } from "../../errors/client-error"
 
 export const auth = fastifyPlugin(async app => {
   app.addHook("preHandler", async request => {

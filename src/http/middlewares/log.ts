@@ -1,7 +1,7 @@
 import { FastifyReply } from "fastify"
 import fastifyPlugin from "fastify-plugin"
 
-import { prisma } from "@/lib/prisma"
+import { prisma } from "../../lib/prisma"
 
 interface LogFastifyReply extends FastifyReply {
   payload?: string
