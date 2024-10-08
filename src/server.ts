@@ -20,6 +20,7 @@ import { createGoal } from "./http/routes/goals/create-goal"
 import { sendGoal } from "./http/routes/goals/send-goal"
 import { getPanel } from "./http/routes/panel/get-panel"
 import { createSession } from "./http/routes/session/create-session"
+import { getReleasedSessions } from "./http/routes/session/get-released-sessions"
 import { getSession } from "./http/routes/session/get-session"
 import { getSessions } from "./http/routes/session/get-sessions"
 import { releaseSession } from "./http/routes/session/release-session"
@@ -49,6 +50,7 @@ app.register(fastifyStatic, {
 })
 
 app.register(getSessions)
+app.register(getReleasedSessions)
 app.register(getSession)
 app.register(createSession)
 app.register(updateSession)
