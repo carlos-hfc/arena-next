@@ -7,7 +7,7 @@
     "dev": "tsx watch --env-file .env src/server.ts",
     "vercel-build": "npx prisma migrate deploy",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node -r tsconfig-paths/register dist/server.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -23,6 +23,7 @@
     "@types/node": "^22.5.4",
     "@types/ws": "^8.5.12",
     "prisma": "^5.19.1",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4"
   },
