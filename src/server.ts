@@ -25,6 +25,8 @@ import { getSession } from "./http/routes/session/get-session"
 import { getSessions } from "./http/routes/session/get-sessions"
 import { releaseSession } from "./http/routes/session/release-session"
 import { updateSession } from "./http/routes/session/update-session"
+import { getInfoTeam } from "./http/routes/team/get-info-team"
+import { getProfile } from "./http/routes/team/get-profile"
 import { getTeam } from "./http/routes/team/get-team"
 import { listTeams } from "./http/routes/team/list-teams"
 import { registerStudent } from "./http/routes/team/register-student"
@@ -66,6 +68,8 @@ app.register(createCard)
 app.register(listTeams)
 app.register(getTeam)
 app.register(registerStudent)
+app.register(getProfile)
+app.register(getInfoTeam)
 
 app.register(getPanel)
 // app.register(createPanel)

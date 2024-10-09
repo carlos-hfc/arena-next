@@ -26,8 +26,8 @@ export async function getTeam(app: FastifyInstance) {
                   teamId: z.string().uuid(),
                   student: z.object({
                     id: z.string().uuid(),
-                    name: z.string().nullable(),
-                    rm: z.string().nullable(),
+                    name: z.string(),
+                    rm: z.string(),
                   }),
                 }),
               ),
