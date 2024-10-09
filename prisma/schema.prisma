@@ -23,9 +23,9 @@ model Log {
 }
 
 model Student {
-  id   String  @id @default(uuid())
-  name String?
-  rm   String? @unique
+  id   String @id @default(uuid())
+  name String
+  rm   String @unique
 
   logs         Log[]
   goalsSended  TeamGoals[]
