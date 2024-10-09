@@ -27,8 +27,6 @@ interface UploadParams {
 }
 
 export async function r2Storage({ file }: UploadParams) {
-  const Body = await file.toBuffer()
-
   const uploadId = randomUUID()
   const uploadFilename = `${uploadId}-${file.filename}`
 
@@ -39,6 +37,8 @@ export async function r2Storage({ file }: UploadParams) {
 
     await pump(file.file, writeStream)
   } else {
+    const Body = await file.toBuffer()
+
     await client.send(
       new PutObjectCommand({
         Bucket: env.AWS_BUCKET_NAME,
