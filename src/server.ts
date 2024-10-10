@@ -44,7 +44,11 @@ app.register(fastifyCors)
 app.register(fastifyJwt, {
   secret: env.JWT_SECRET,
 })
-app.register(fastifyWebsocket)
+app.register(fastifyWebsocket, {
+  options: {
+    server: app.server,
+  },
+})
 app.register(fastifyMultipart)
 app.register(fastifyStatic, {
   root: resolve(__dirname, "..", "uploads"),
