@@ -38,6 +38,15 @@ export async function getInfoTeam(app: FastifyInstance) {
                     createdAt: z.coerce.date(),
                   }),
                 ),
+                teamBoosts: z.array(
+                  z.object({
+                    id: z.string().uuid(),
+                    teamId: z.string().uuid(),
+                    boostId: z.string().uuid(),
+                    scored: z.boolean(),
+                    createdAt: z.coerce.date(),
+                  }),
+                ),
               }),
             }),
           },
@@ -67,6 +76,7 @@ export async function getInfoTeam(app: FastifyInstance) {
               },
             },
             teamCards: true,
+            teamBoosts: true,
           },
         })
 
