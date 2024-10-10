@@ -78,4 +78,6 @@ app.register(getInfoTeam)
 app.register(getPanel)
 // app.register(createPanel)
 
-app.listen({ port: env.PORT }).then(() => console.log("HTTP Server running"))
+app
+  .listen({ port: env.PORT, host: "0.0.0.0" })
+  .then(() => console.log("HTTP Server running"))
