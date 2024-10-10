@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch --env-file .env src/server.ts",
-    "vercel-build": "npx prisma generate && npx prisma migrate deploy"
+    "build": "tsc",
+    "start": "node -r dotenv/config dist/server.js",
+    "heroku-postbuild": "npm run build && npx prisma generate && npx prisma migrate deploy"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -20,6 +22,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.5.4",
     "@types/ws": "^8.5.12",
+    "dotenv": "^16.4.5",
     "prisma": "^5.19.1",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.19.0",
