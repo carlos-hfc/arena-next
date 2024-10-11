@@ -35,8 +35,9 @@ model Student {
 }
 
 model Team {
-  id   String @id @default(uuid())
-  name String
+  id     String @id @default(uuid())
+  name   String
+  points Int?
 
   session   Session @relation(fields: [sessionId], references: [id])
   sessionId String
@@ -79,7 +80,7 @@ model Session {
 model TeamGoals {
   id        String   @id @default(uuid())
   path      String
-  scored    Boolean  @default(false)
+  points    Int?
   createdAt DateTime @default(now())
 
   team   Team   @relation(fields: [teamId], references: [id])
@@ -96,7 +97,7 @@ model TeamGoals {
 
 model TeamBoosts {
   id        String   @id @default(uuid())
-  scored    Boolean  @default(false)
+  points    Int      @default(10)
   createdAt DateTime @default(now())
 
   team   Team   @relation(fields: [teamId], references: [id])
@@ -110,7 +111,7 @@ model TeamBoosts {
 
 model TeamCards {
   id        String   @id @default(uuid())
-  scored    Boolean  @default(false)
+  points    Int      @default(50)
   createdAt DateTime @default(now())
 
   team   Team   @relation(fields: [teamId], references: [id])
