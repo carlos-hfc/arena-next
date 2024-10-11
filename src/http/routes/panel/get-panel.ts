@@ -61,7 +61,6 @@ export async function getPanel(app: FastifyInstance) {
             where: {
               goalId: body.goalId,
               teamId: body.teamId,
-              scored: false,
             },
           })
 
@@ -71,7 +70,7 @@ export async function getPanel(app: FastifyInstance) {
                 id: teamGoals.id,
               },
               data: {
-                scored: true,
+                points: 100,
               },
             })
           }
@@ -86,20 +85,10 @@ export async function getPanel(app: FastifyInstance) {
           })
 
           if (teamBoosts) {
-            await prisma.teamBoosts.update({
-              where: {
-                id: teamBoosts.id,
-              },
-              data: {
-                scored: true,
-              },
-            })
-          } else {
             await prisma.teamBoosts.create({
               data: {
                 boostId: body.boostId,
                 teamId: body.teamId,
-                scored: true,
               },
             })
           }
@@ -113,21 +102,11 @@ export async function getPanel(app: FastifyInstance) {
             },
           })
 
-          if (teamCards) {
-            await prisma.teamCards.update({
-              where: {
-                id: teamCards.id,
-              },
-              data: {
-                scored: true,
-              },
-            })
-          } else {
+          if (!teamCards) {
             await prisma.teamCards.create({
               data: {
                 cardId: body.cardId,
                 teamId: body.teamId,
-                scored: true,
               },
             })
           }
@@ -137,7 +116,6 @@ export async function getPanel(app: FastifyInstance) {
           await Promise.all([
             prisma.teamGoals.findMany({
               where: {
-                scored: true,
                 team: {
                   sessionId: session?.id,
                 },
@@ -148,7 +126,6 @@ export async function getPanel(app: FastifyInstance) {
             }),
             prisma.teamCards.findMany({
               where: {
-                scored: true,
                 team: {
                   sessionId: session?.id,
                 },
@@ -159,7 +136,6 @@ export async function getPanel(app: FastifyInstance) {
             }),
             prisma.teamBoosts.findMany({
               where: {
-                scored: true,
                 team: {
                   sessionId: session?.id,
                 },
@@ -171,32 +147,50 @@ export async function getPanel(app: FastifyInstance) {
           ])
 
         const panelScore = session?.teams.map(team => {
-          const goalScore = goalScoreCount.filter(
-            item => item.teamId === team.id,
-          ).length
-          const cardScore = cardScoreCount.filter(
-            item => item.teamId === team.id,
-          ).length
-          const boostScore = boostScoreCount.filter(
-            item => item.teamId === team.id,
-          ).length
+          const goalScore = goalScoreCount.reduce((accumulate, current) => {
+            if (current.teamId === team.id) {
+              accumulate += current.points ? current.points : 0
+
+              return accumulate
+            }
+
+            return 0
+          }, 0)
+          const cardScore = cardScoreCount.reduce((accumulate, current) => {
+            if (current.teamId === team.id) {
+              accumulate += current.points ? current.points : 0
+
+              return accumulate
+            }
+
+            return 0
+          }, 0)
+          const boostScore = boostScoreCount.reduce((accumulate, current) => {
+            if (current.teamId === team.id) {
+              accumulate += current.points ? current.points : 0
+
+              return accumulate
+            }
+
+            return 0
+          }, 0)
+
+          const totalScore = goalScore + cardScore + boostScore
 
           return {
-            session: {
-              id: session.id,
-            },
             team: {
               id: team.id,
               name: team.name,
               goalScore,
               cardScore,
               boostScore,
+              totalScore,
             },
           }
         })
 
         app.websocketServer.clients.forEach(client => {
-          if (client.readyState === 1) {
+          if (client.readyState === client.OPEN) {
             client.send(JSON.stringify(panelScore))
           }
         })
