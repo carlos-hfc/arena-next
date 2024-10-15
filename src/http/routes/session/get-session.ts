@@ -51,6 +51,7 @@ export async function getSession(app: FastifyInstance) {
                   createdAt: z.coerce.date(),
                 }),
               ),
+              panelId: z.string().uuid().nullable(),
             }),
           }),
         },
@@ -84,6 +85,11 @@ export async function getSession(app: FastifyInstance) {
               createdAt: "asc",
             },
           },
+          panel: {
+            select: {
+              id: true,
+            },
+          },
         },
       })
 
@@ -91,7 +97,12 @@ export async function getSession(app: FastifyInstance) {
         throw new ClientError("Session not found")
       }
 
-      return { session }
+      return {
+        session: {
+          ...session,
+          panelId: session.panel?.id ?? null,
+        },
+      }
     },
   )
 }
