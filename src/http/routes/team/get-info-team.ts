@@ -26,7 +26,13 @@ export async function getInfoTeam(app: FastifyInstance) {
                 name: z.string(),
                 teamGoals: z.array(
                   z.object({
-                    goalId: z.string().uuid(),
+                    goal: z.object({
+                      id: z.string().uuid(),
+                      sessionId: z.string().uuid(),
+                      description: z.string(),
+                      time: z.number().int(),
+                      order: z.number().int(),
+                    }),
                   }),
                 ),
                 teamCards: z.array(
@@ -72,7 +78,7 @@ export async function getInfoTeam(app: FastifyInstance) {
             sessionId: true,
             teamGoals: {
               select: {
-                goalId: true,
+                goal: true,
               },
             },
             teamCards: true,
