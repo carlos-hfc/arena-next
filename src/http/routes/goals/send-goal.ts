@@ -1,3 +1,4 @@
+import { differenceInMinutes } from "date-fns"
 import { FastifyInstance } from "fastify"
 import { ZodTypeProvider } from "fastify-type-provider-zod"
 import z from "zod"
@@ -32,9 +33,15 @@ export async function sendGoal(app: FastifyInstance) {
           throw new ClientError("File is required")
         }
 
-        const { url } = await r2Storage({
-          file: upload,
+        const panel = await prisma.panel.findFirst({
+          where: {
+            sessionId,
+          },
         })
+
+        if (!panel) {
+          throw new ClientError("Session was not released")
+        }
 
         const goal = await prisma.goal.findUnique({
           where: {
@@ -64,8 +71,20 @@ export async function sendGoal(app: FastifyInstance) {
         })
 
         if (!goal) {
-          throw new ClientError("goal não encontrado")
+          throw new ClientError("Goal not found")
         }
+
+        const diffInMinutes = differenceInMinutes(panel.createdAt, new Date())
+
+        const goalExpired = diffInMinutes < 0
+
+        if (goalExpired) {
+          throw new ClientError("")
+        }
+
+        const { url } = await r2Storage({
+          file: upload,
+        })
 
         const teamGoal = await prisma.teamGoals.create({
           data: {
@@ -78,6 +97,8 @@ export async function sendGoal(app: FastifyInstance) {
 
         return {
           goal,
+          panel,
+          diffInMinutes,
           teamGoal,
         }
       },
