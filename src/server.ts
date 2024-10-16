@@ -18,6 +18,7 @@ import { createBoost } from "./http/routes/boost/create-boost"
 import { createCard } from "./http/routes/card/create-card"
 import { createGoal } from "./http/routes/goals/create-goal"
 import { sendGoal } from "./http/routes/goals/send-goal"
+import { startGoal } from "./http/routes/goals/start-goal"
 import { getPanel } from "./http/routes/panel/get-panel"
 import { createSession } from "./http/routes/session/create-session"
 import { getReleasedSessions } from "./http/routes/session/get-released-sessions"
@@ -64,6 +65,7 @@ app.register(releaseSession)
 
 app.register(createGoal)
 app.register(sendGoal)
+app.register(startGoal)
 
 app.register(createBoost)
 
