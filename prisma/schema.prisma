@@ -124,10 +124,11 @@ model TeamCards {
 }
 
 model Goal {
-  id          String @id @default(uuid())
+  id          String    @id @default(uuid())
   description String
   time        Int
   order       Int
+  startedAt   DateTime?
 
   session   Session @relation(fields: [sessionId], references: [id])
   sessionId String
