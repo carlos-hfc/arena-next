@@ -1,4 +1,3 @@
-import { differenceInMinutes } from "date-fns"
 import { FastifyInstance } from "fastify"
 import { ZodTypeProvider } from "fastify-type-provider-zod"
 import z from "zod"
@@ -21,9 +20,14 @@ export async function sendGoal(app: FastifyInstance) {
             goalId: z.string().uuid(),
             sessionId: z.string().uuid(),
           }),
+          response: {
+            200: z.object({
+              teamGoalId: z.string().uuid(),
+            }),
+          },
         },
       },
-      async (request, reply) => {
+      async request => {
         const studentId = await request.getCurrentUserId()
         const { goalId, sessionId, teamId } = request.params
 
@@ -74,12 +78,8 @@ export async function sendGoal(app: FastifyInstance) {
           throw new ClientError("Goal not found")
         }
 
-        const diffInMinutes = differenceInMinutes(panel.createdAt, new Date())
-
-        const goalExpired = diffInMinutes < 0
-
-        if (goalExpired) {
-          throw new ClientError("")
+        if (goal.startedAt === null) {
+          throw new ClientError("Goal not started to be delivered")
         }
 
         const { url } = await r2Storage({
@@ -96,10 +96,7 @@ export async function sendGoal(app: FastifyInstance) {
         })
 
         return {
-          goal,
-          panel,
-          diffInMinutes,
-          teamGoal,
+          teamGoalId: teamGoal.id,
         }
       },
     )

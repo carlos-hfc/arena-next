@@ -1,3 +1,4 @@
+import { differenceInMinutes } from "date-fns"
 import { FastifyInstance } from "fastify"
 import { ZodTypeProvider } from "fastify-type-provider-zod"
 import z from "zod"
@@ -26,26 +27,33 @@ export async function getPanel(app: FastifyInstance) {
     async (connection, request) => {
       const { panelId } = request.query
 
-      const session = await prisma.session.findFirst({
-        where: {
-          panel: {
+      const [panel, session] = await Promise.all([
+        prisma.panel.findUnique({
+          where: {
             id: panelId,
           },
-        },
-        include: {
-          teams: {
-            select: {
-              id: true,
-              name: true,
-              teamGoals: true,
-              teamCards: true,
-              teamBoosts: true,
+        }),
+        prisma.session.findFirst({
+          where: {
+            panel: {
+              id: panelId,
             },
           },
-        },
-      })
+          include: {
+            teams: {
+              select: {
+                id: true,
+                name: true,
+                teamGoals: true,
+                teamCards: true,
+                teamBoosts: true,
+              },
+            },
+          },
+        }),
+      ])
 
-      if (!session) {
+      if (!session || !panel) {
         throw new ClientError("Panel not found")
       }
 
@@ -62,15 +70,25 @@ export async function getPanel(app: FastifyInstance) {
               goalId: body.goalId,
               teamId: body.teamId,
             },
+            include: {
+              goal: true,
+            },
           })
 
           if (teamGoals) {
+            const diffInMinutes = differenceInMinutes(
+              teamGoals.createdAt,
+              teamGoals.goal.startedAt as Date,
+            )
+
+            const goalExpired = diffInMinutes > teamGoals.goal.time
+
             await prisma.teamGoals.update({
               where: {
                 id: teamGoals.id,
               },
               data: {
-                points: 100,
+                points: goalExpired ? 50 : 100,
               },
             })
           }
